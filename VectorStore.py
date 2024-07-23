@@ -1,21 +1,33 @@
 # Requisite imports
 from VectorClass import VectorStore  # Importing the VectorStore class from vector_store module
 import numpy as np  # Importing numpy for numerical operations
+import fitz
 
 # Establish a VectorStore instance
 vector_store = VectorStore()  # Creating an instance of the VectorStore class
 
-# Define sentences
-sentences = [  # Defining a list of example sentences
-    "I eat mango",
-    "mango is my favorite fruit",
-    "mango, apple, oranges are fruits",
-    "fruits are good for health",
-]
+
+# Open the PDF file
+pdf_path = "testbook.pdf"
+document = fitz.open(pdf_path)
+
+# List to hold the text from each paragraph
+paragraphs = []
+
+# Iterate over each page in the document
+for page_num in range(document.page_count):
+    page = document.load_page(page_num)
+    text = page.get_text("text")  # Extract text from the page
+    
+    # Split the text into paragraphs based on double newline characters
+    paras = text.split('\n')
+    paragraphs.append(paras)
+
+
 
 # Tokenization and Vocabulary Creation
 vocabulary = set()  # Initializing an empty set to store unique words
-for sentence in sentences:  # Iterating over each sentence in the list
+for sentence in paragraphs:  # Iterating over each sentence in the list
     tokens = sentence.lower().split()  # Tokenizing the sentence by splitting on whitespace and converting to lowercase
     vocabulary.update(tokens)  # Updating the set of vocabulary with unique tokens
 
@@ -24,7 +36,7 @@ word_to_index = {word: i for i, word in enumerate(vocabulary)}  # Creating a dic
 
 # Vectorization
 sentence_vectors = {}  # Initializing an empty dictionary to store sentence vectors
-for sentence in sentences:  # Iterating over each sentence in the list
+for sentence in paragraphs:  # Iterating over each sentence in the list
     tokens = sentence.lower().split()  # Tokenizing the sentence by splitting on whitespace and converting to lowercase
     vector = np.zeros(len(vocabulary))  # Initializing a numpy array of zeros for the sentence vector
     for token in tokens:  # Iterating over each token in the sentence
